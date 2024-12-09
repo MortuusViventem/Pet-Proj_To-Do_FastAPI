@@ -1,0 +1,90 @@
+    <header class="bg-blue-600 text-white py-4">
+        <nav class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">ToDo App</h1>
+            <ul class="flex items-center">
+                {% if not user_authenticated %}
+                    <li class="mr-[10px]">
+                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="openModalReg()">Зарегистрироваться</button>
+                    </li>
+                    <li class="mr-[10px]">
+                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="openModalLogin()">Войти</button>
+                    </li>
+                {% else %}
+                    <li>
+                        <form method="post" action="{{ url_for('logout_user') }}">
+                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Выйти</button>
+                        </form>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <div id="loginModal" class="modal p-6 rounded-lg shadow-md mb-8">
+        <div class="modal-content">
+            <span class="close" onclick="closeModalLogin()">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Войти в аккаунт</h2>
+            <form class="flex flex-col space-y-4" method="post" action="{{ url_for('login_user') }}">
+                <div>
+                    <label for="username" class="block font-semibold mb-2">Username:</label>
+                    <input type="text" id="username" name="username" class="border border-gray-300 p-2 w-full rounded" required>
+                </div>
+                <div>
+                    <label for="password" class="block font-semibold mb-2">Password:</label>
+                    <input type="password" id="password" name="password" class="border border-gray-300 p-2 w-full rounded" required>
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Войти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="regModal" class="modal p-6 rounded-lg shadow-md mb-8">
+        <div class="modal-content">
+            <span class="close" onclick="closeModalReg()">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Зарегистрировать аккаунт</h2>
+            <form class="flex flex-col space-y-4" method="post" action="{{ url_for('register_user') }}">
+                <div>
+                    <label for="username" class="block font-semibold mb-2">Username:</label>
+                    <input type="text" id="username" name="username" class="border border-gray-300 p-2 w-full rounded" required>
+                </div>
+                <div>
+                    <label for="password" class="block font-semibold mb-2">Password:</label>
+                    <input type="password" id="password" name="password" class="border border-gray-300 p-2 w-full rounded" required>
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Зарегистрироваться</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        function openModalLogin() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
+
+        function openModalReg() {
+            document.getElementById('regModal').style.display = 'block';
+        }
+
+        function closeModalLogin() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        function closeModalReg() {
+            document.getElementById('regModal').style.display = 'none';
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('loginModal')) {
+                closeModalLogin();
+            }
+            if (event.target == document.getElementById('regModal')) {
+                closeModalReg();
+            }
+        }
+    </script>

@@ -1,0 +1,131 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-bold mb-4">Добавить новую задачу</h2>
+      <form class="flex flex-col space-y-4" action="{{ url_for('add_task') }}" method="post">
+        <div>
+          <label for="task_name" class="block font-semibold mb-2">Название задачи <span class="text-red-500">*</span></label>
+          <input type="text" id="task_name" name="task_name" class="border border-gray-300 p-2 w-full rounded" required>
+        </div>
+        <div>
+          <label for="description" class="block font-semibold mb-2">Описание задачи (необязательно)</label>
+          <textarea id="description" name="description" class="border border-gray-300 p-2 w-full rounded"></textarea>
+        </div>
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Добавить задачу</button>
+      </form>
+    </div>
+
+    <!-- Таблица задач -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">Ваши задачи</h2>
+        <table class="table-auto w-full text-left">
+            <thead>
+                <tr>
+                <th class="px-4 py-2 text-center">Название задачи</th>
+                <th class="px-4 py-2 text-center">Описание</th>
+                <th class="px-4 py-2 text-center">Статус</th>
+                <th class="px-4 py-2 text-center">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr class="border-b-3">
+                    <td class="w-[265px]">
+                        <div class="min-h-[60px] flex items-center">
+                            {{ task.task_name }}
+                        </div>
+                    </td>
+                    <td class="w-[565px]">{{ task.description or 'Без описания' }}</td>
+                    <td class="text-center w-[140px]">
+                        {% if task.status %}
+                            <span class="bg-green-200 text-green-700 py-1 px-3 rounded-full text-sm">Завершено</span>
+                        {% else %}
+                            <span class="bg-red-200 text-red-700 py-1 px-3 rounded-full text-sm">Не завершено</span>
+                        {% endif %}
+                    </td>
+                    <td class="">
+                        <div class="flex flex-row justify-center text-center space-x-2">
+                            <!-- Форма для изменения статуса -->
+                            <form action="{{ url_for('update_status', task_id=task.id) }}" method="post">
+                                {% if task.status %}
+                                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 inline-block">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg> Изменить статус
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 inline-block">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg> Изменить статус
+                                    </button>
+                                {% endif %}
+                            </form>
+
+                            <!-- Форма для удаления задачи -->
+                            <form action="{{ url_for('delete', task_id=task.id) }}" method="post">
+                                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 inline-block">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg> Удалить
+                                </button>
+                            </form>
+
+                            <!-- Кнопка для открытия модального окна редактирования -->
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" onclick="openModal('{{ task.id }}', '{{ task.task_name }}', '{{ task.description }}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 inline-block">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg> Редактировать
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Модальное окно для редактирования задачи -->
+    {% for task in tasks %}
+    <div id="editModal" class="modal p-6 rounded-lg shadow-md mb-8">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Edit Task</h2>
+            <form id="editForm" class="flex flex-col space-y-4" action="" method="post">
+                <label for="edit_task_name" class="block font-semibold mb-2">Task Name</label>
+                <input type="text" id="edit_task_name" name="task_name" class="border border-gray-300 p-2 w-full rounded" required>
+
+                <label for="edit_description" class="block font-semibold mb-2">Description</label>
+                <textarea id="edit_description" name="description" class="border border-gray-300 p-2 w-full rounded"></textarea>
+
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update Task</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    <script>
+        function openModal(taskId, taskName, taskDescription) {
+            document.getElementById('editModal').style.display = 'block';
+            document.getElementById('edit_task_name').value = taskName;
+            document.getElementById('edit_description').value = taskDescription;
+            document.getElementById('editForm').action = '/tasks/update_task/' + taskId;
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('editModal')) {
+                closeModal();
+            }
+        }
+    </script>
+
+
+{% endblock %}
+
+
